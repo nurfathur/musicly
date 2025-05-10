@@ -1,0 +1,10 @@
+Flask
+python-dotenv
+yt-dlp
+cloudinary
+gunicorn
+pytest
+flask-cors
+pytube
+youtube-search-python
+asyncio

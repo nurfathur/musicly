@@ -26,13 +26,11 @@ def create_app():
     from routes.audio_routes import audio_bp
     from routes.health_routes import health_bp
     from routes.index_routes import index_bp
-    from routes.youtube_routes import youtube_bp
     
     app.register_blueprint(index_bp, url_prefix='')
     app.register_blueprint(audio_bp, url_prefix='/api')
-    app.register_blueprint(youtube_bp, url_prefix='/api')
     app.register_blueprint(health_bp, url_prefix='/api')
-
+    
     
     return app
 

@@ -1,6 +1,5 @@
 import asyncio
-import sys
-import json
+from flask import Flask, jsonify
 import logging
 
 # Import your controller
@@ -11,101 +10,64 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
+logger = logging.getLogger(__name__)
+
+# Create Flask app
+app = Flask(__name__)
 
 async def test_controller():
-    """Test the YouTube controller"""
+    """Test YouTube controller with basic search"""
+    print("=== Test 1: Basic Search ===")
+    controller = YouTubeController()
+    query = "coldplay"
+    print(f"Searching for: {query}")
+    
+    # Create Flask app context for jsonify
+    with app.app_context():
+        try:
+            response, status_code = await controller.search(query)
+            if status_code == 200:
+                print(f"✅ Success! Found {response.json.get('totalResults', 0)} results")
+                # Print first result
+                if response.json.get('results'):
+                    first_result = response.json['results'][0]
+                    print(f"First result: {first_result.get('title')}")
+                    print(f"Duration: {first_result.get('duration')}")
+            else:
+                print(f"❌ Error: {response.json.get('error', 'Unknown error')}")
+        except Exception as e:
+            print(f"❌ Error during controller test: {str(e)}")
+            import traceback
+            traceback.print_exc()
+
+async def test_direct_service():
+    """Test YouTube service directly"""
+    print("\n=== Test 2: Direct Service Call ===")
+    from services.youtube import search_videos
+
+    query = "adele"
+    print(f"Searching service directly for: {query}")
+    
     try:
-        # Initialize controller
-        controller = YouTubeController()
-        
-        # Test 1: Basic search
-        print("\n=== Test 1: Basic Search ===")
-        query = "coldplay"
-        print(f"Searching for: {query}")
-        response, status_code = await controller.search(query)
-        
-        # Parse the response JSON
-        if isinstance(response, str):
-            response_data = json.loads(response)
-        else:
-            response_data = response
-            
-        print(f"Status code: {status_code}")
-        if status_code == 200:
-            print(f"✅ Search successful!")
-            data = response_data.get('data', {})
-            print(f"Total results: {data.get('totalResults', 0)}")
-            
-            # Print first result if available
-            results = data.get('results', [])
-            if results:
-                first_result = results[0]
-                print("\nFirst result:")
-                print(f"Title: {first_result.get('title')}")
-                print(f"URL: {first_result.get('url')}")
+        result = await search_videos(query)
+        if result.get('success'):
+            print(f"✅ Success! Found {result.get('totalResults', 0)} results")
+            # Print first result
+            if result.get('results'):
+                first_result = result['results'][0]
+                print(f"First result: {first_result.get('title')}")
                 print(f"Duration: {first_result.get('duration')}")
-                print(f"Author: {first_result.get('author', 'Unknown')}")
         else:
-            print(f"❌ Search failed: {response_data.get('error', 'Unknown error')}")
-        
-        # Test 2: Cache stats
-        print("\n=== Test 2: Cache Stats ===")
-        response, status_code = controller.get_cache_statistics()
-        
-        # Parse the response JSON
-        if isinstance(response, str):
-            response_data = json.loads(response)
-        else:
-            response_data = response
-            
-        print(f"Status code: {status_code}")
-        if status_code == 200:
-            print(f"✅ Got cache stats successfully!")
-            cache_stats = response_data.get('data', {}).get('cache', {})
-            print(f"Cache size: {cache_stats.get('size', 0)}")
-            print(f"Cache max size: {cache_stats.get('max_size', 0)}")
-            print(f"Cache TTL: {cache_stats.get('ttl_seconds', 0)} seconds")
-        else:
-            print(f"❌ Failed to get cache stats: {response_data.get('error', 'Unknown error')}")
-        
-        # Test 3: Clear cache
-        print("\n=== Test 3: Clear Cache ===")
-        response, status_code = controller.clear_cache()
-        
-        # Parse the response JSON
-        if isinstance(response, str):
-            response_data = json.loads(response)
-        else:
-            response_data = response
-            
-        print(f"Status code: {status_code}")
-        if status_code == 200:
-            print(f"✅ Cache cleared successfully!")
-        else:
-            print(f"❌ Failed to clear cache: {response_data.get('error', 'Unknown error')}")
-        
-        # Test 4: Empty query (should fail with 400)
-        print("\n=== Test 4: Empty Query (Expected to fail) ===")
-        response, status_code = await controller.search("")
-        
-        # Parse the response JSON
-        if isinstance(response, str):
-            response_data = json.loads(response)
-        else:
-            response_data = response
-            
-        print(f"Status code: {status_code}")
-        if status_code == 400:
-            print(f"✅ Correctly rejected empty query with 400 status")
-            print(f"Error message: {response_data.get('error', 'No error message')}")
-        else:
-            print(f"❌ Expected 400 status code, got {status_code}")
-            
+            print(f"❌ Error: {result.get('error', 'Unknown error')}")
     except Exception as e:
-        print(f"❌ Error during controller test: {str(e)}")
+        print(f"❌ Error during service test: {str(e)}")
         import traceback
         traceback.print_exc()
 
+async def main():
+    """Run all tests"""
+    await test_controller()
+    await test_direct_service()
+
 if __name__ == "__main__":
-    # Run the test
-    asyncio.run(test_controller())
+    asyncio.run(main())

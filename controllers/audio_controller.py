@@ -7,15 +7,19 @@ from utils.response import success_response, error_response
 
 logger = logging.getLogger(__name__)
 
+
 class AudioController:
     """Controller for audio processing operations"""
     
     def __init__(self):
         """Initialize the audio controller with required services"""
+        # Use environment variable for ffmpeg path
+        ffmpeg_path = os.getenv('FFMPEG_PATH', '/usr/bin/ffmpeg')
+        
         self.downloader = AudioDownloader(
-            ffmpeg_path='/usr/bin/ffmpeg',
-            cookies_path='./cookies.txt'  # Pastikan file ini valid
+            ffmpeg_path=ffmpeg_path
         )
+        
         self.uploader = CloudinaryUploader(
             cloud_name=os.getenv('CLOUD_NAME'),
             api_key=os.getenv('API_KEY'),
@@ -30,12 +34,13 @@ class AudioController:
             video_url (str): URL of the video to process
             
         Returns:
-            Response: Flask response object
+            dict: Response dictionary
         """
         try:
             # Generate unique filename
             unique_id = str(uuid.uuid4())
-            output_filename = f"/tmp/{unique_id}"  # Temp directory (Railway & lokal compatible)
+            output_dir = os.getenv('TEMP_DIR', '/tmp')
+            output_filename = os.path.join(output_dir, unique_id)
             
             logger.info(f"Starting audio processing for URL: {video_url}")
             
@@ -53,8 +58,8 @@ class AudioController:
                 os.remove(downloaded_file)
                 logger.info(f"Removed temporary file: {downloaded_file}")
             
-            return success_response({"url": uploaded_url})
+            return {"success": True, "url": uploaded_url}
         
         except Exception as e:
             logger.error(f"Audio processing error: {str(e)}")
-            return error_response(f"Processing error: {str(e)}", 500)
+            return {"success": False, "error": str(e)}

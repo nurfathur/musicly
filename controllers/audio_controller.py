@@ -36,7 +36,7 @@ class AudioController:
             
             # Download audio
             logger.info(f"Starting audio processing for URL: {video_url}")
-            downloaded_file = AudioDownloader(cookies_path='./cookies.txt')
+            downloaded_file = AudioDownloader(video_url, output_filename,cookies_path='./data/cookies.txt')
             
             
             # Upload to cloud storage

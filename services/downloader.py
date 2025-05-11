@@ -6,13 +6,15 @@ logger = logging.getLogger(__name__)
 class AudioDownloader:
     """Service for downloading audio from video URLs"""
 
-    def __init__(self, quality='192', cookies_path=None):
+    def __init__(self, quality='192', ffmpeg_path=None, cookies_path=None):
         """
         Args:
             quality (str): Audio quality in kbps
+            ffmpeg_path (str): Path to ffmpeg binary (optional)
             cookies_path (str): Path to cookies.txt file (optional)
         """
         self.quality = quality
+        self.ffmpeg_path = ffmpeg_path
         self.cookies_path = cookies_path
 
     def download_audio(self, url, output_filename):
@@ -28,6 +30,9 @@ class AudioDownloader:
                 }],
                 'quiet': True
             }
+
+            if self.ffmpeg_path:
+                ydl_opts['ffmpeg_location'] = self.ffmpeg_path
 
             if self.cookies_path:
                 ydl_opts['cookiefile'] = self.cookies_path

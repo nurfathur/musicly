@@ -21,6 +21,10 @@ class AudioDownloader:
         """Download audio from URL and convert to MP3"""
         try:
             ydl_opts = {
+                'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+                'http_headers': {
+                    'referer': 'https://www.youtube.com/'
+                },
                 'format': 'bestaudio/best',
                 'outtmpl': output_filename,
                 'postprocessors': [{

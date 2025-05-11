@@ -1,5 +1,6 @@
 from flask import Flask
 import os
+import sys
 import logging
 from dotenv import load_dotenv
 
@@ -8,8 +9,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("app.log"),
-        logging.StreamHandler()
+        logging.StreamHandler(sys.stdout)
     ]
 )
 logger = logging.getLogger(__name__)

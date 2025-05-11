@@ -12,7 +12,7 @@ class AudioController:
     
     def __init__(self):
         """Initialize the audio controller with required services"""
-        self.downloader = AudioDownloader()
+        self.downloader = AudioDownloader(ffmpeg_path='/usr/bin/ffmpeg', browser_cookies='chrome')  # atau sesuaikan
         self.uploader = CloudinaryUploader(
             cloud_name=os.getenv('CLOUD_NAME'),
             api_key=os.getenv('API_KEY'),
@@ -32,23 +32,26 @@ class AudioController:
         try:
             # Generate unique filename
             unique_id = str(uuid.uuid4())
-            output_filename = f"{unique_id}"
+            output_filename = f"/tmp/{unique_id}"  # Temp directory (aman di Railway dan lokal)
             
-            # Download audio
             logger.info(f"Starting audio processing for URL: {video_url}")
-            downloaded_file = AudioDownloader(video_url, output_filename,cookies_path='./data/cookies.txt')
             
+            # Download audio (returns full .mp3 path)
+            downloaded_file = self.downloader.download_audio(
+                video_url,
+                output_filename
+            )
             
-            # Upload to cloud storage
+            # Upload to Cloudinary
             uploaded_url = self.uploader.upload_file(downloaded_file)
             
-            # Clean up temporary file
+            # Clean up
             if os.path.exists(downloaded_file):
                 os.remove(downloaded_file)
                 logger.info(f"Removed temporary file: {downloaded_file}")
             
             return success_response({"url": uploaded_url})
-            
+        
         except Exception as e:
             logger.error(f"Audio processing error: {str(e)}")
             return error_response(f"Processing error: {str(e)}", 500)

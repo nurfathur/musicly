@@ -15,9 +15,6 @@ class CloudinaryUploader:
             api_key (str): Cloudinary API key
             api_secret (str): Cloudinary API secret
         """
-                
-        self.quality = quality
-        self.cookies_path = cookies_path
         # Configure Cloudinary
         if cloud_name and api_key and api_secret:
             cloudinary.config(
